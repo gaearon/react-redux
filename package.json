@@ -48,7 +48,7 @@
     "test": "vitest --run --typecheck",
     "test:watch": "vitest --watch",
     "type-tests": "tsc --noEmit -p tsconfig.test.json",
-    "size": "size-limit",
+    "size": "size-limit --config $INIT_CWD/.size-limit.mts",
     "coverage": "codecov"
   },
   "peerDependencies": {

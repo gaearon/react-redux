@@ -1,25 +1,41 @@
-name: size
+name: Check Bundle-Size
 
-on:
-  pull_request:
-    branches:
-      - master
-
-permissions:
-  pull-requests: write
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   size:
-    name: Check compressed size
     runs-on: ubuntu-latest
+    name: Check Bundle-Size
+
+    strategy:
+      matrix:
+        node: ['22.x']
+
     env:
       CI_JOB_NUMBER: 1
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'yarn'
+          check-latest: true
+
+      - run: yarn install
+
       - uses: EskiMojo14/size-limit-action@v2
+        id: size
+        continue-on-error: true
+
         with:
           directory: .
           github_token: ${{ secrets.GITHUB_TOKEN }}
           build_script: build
           package_manager: yarn
           size_margin: non-zero
+
+      - name: Run size-limit locally
+        if: ${{ success() && steps.size.outcome == 'failure' }}
+        run: |
+          yarn run build
+          yarn run size
